@@ -1,4 +1,4 @@
-# Quant Trader
+# Codex Trader
 
 Quant research toolkit with:
 
@@ -57,31 +57,31 @@ pip install -e .
 ### Backtest all bundled strategies
 
 ```bash
-quant-trader backtest --config config.json
+codex-trader backtest --config config.json
 ```
 
 ### Backtest a single strategy
 
 ```bash
-quant-trader backtest --config config.json --strategy dual_momentum
+codex-trader backtest --config config.json --strategy dual_momentum
 ```
 
 ### Train the ML strategy and print summary stats
 
 ```bash
-quant-trader train-ml --config config.json
+codex-trader train-ml --config config.json
 ```
 
 ### Optimize strategy parameters
 
 ```bash
-quant-trader optimize --config config.json --strategy dual_momentum
+codex-trader optimize --config config.json --strategy dual_momentum
 ```
 
 ### Paper trade using the local simulator
 
 ```bash
-quant-trader paper-trade --config config.json --strategy dual_momentum
+codex-trader paper-trade --config config.json --strategy dual_momentum
 ```
 
 ### Run the dashboard
@@ -95,7 +95,7 @@ streamlit run dashboard.py
 Set `"broker": "moomoo"` in `config.json`, run moomoo OpenD locally, then:
 
 ```bash
-quant-trader paper-trade --config config.json --strategy dual_momentum
+codex-trader paper-trade --config config.json --strategy dual_momentum
 ```
 
 ## Paper trading adapters

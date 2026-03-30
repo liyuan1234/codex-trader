@@ -14,7 +14,7 @@ from quant_trader.optimizer import optimize_strategy
 from quant_trader.strategies import build_strategy
 
 
-st.set_page_config(page_title="Quant Trader", layout="wide")
+st.set_page_config(page_title="Codex Trader", layout="wide")
 
 
 @st.cache_data(show_spinner=False)
@@ -40,7 +40,7 @@ def backtest_strategy(config_path: str, strategy_name: str):
     )
 
 
-st.title("Quant Trader")
+st.title("Codex Trader")
 st.caption("Backtesting, parameter search, ML signals, and paper-trading controls.")
 
 default_config = Path(__file__).with_name("config.json")

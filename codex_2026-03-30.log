@@ -99,5 +99,13 @@ Summary of work completed in this session
    - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/README.md
    - Documented portfolio-value sizing and shared CLI/dashboard rebalance behavior.
 
+11. Repo rename
+   - Renamed the GitHub repository from `quant-trader` to `codex-trader`.
+   - Updated project-facing names in:
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/pyproject.toml
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/README.md
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/dashboard.py
+   - Renamed the console script entry point from `quant-trader` to `codex-trader`.
+
 Instruction adopted
 - Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.

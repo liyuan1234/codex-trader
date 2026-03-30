@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "quant-trader"
+name = "codex-trader"
 version = "0.1.0"
 description = "Quant research toolkit with historical backtesting, ML signals, and paper trading adapters."
 readme = "README.md"
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-quant-trader = "quant_trader.cli:main"
+codex-trader = "quant_trader.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}
