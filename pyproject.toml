@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-trading-analyzer"
+version = "0.1.0"
+description = "Quant research toolkit with historical backtesting, ML signals, and paper trading adapters."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26.0",
+  "pandas>=2.2.0",
+  "scikit-learn>=1.5.0",
+  "yfinance>=0.2.54",
+]
+
+[project.scripts]
+quant-trader = "quant_trader.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]

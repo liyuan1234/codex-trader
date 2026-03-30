@@ -1,0 +1,77 @@
+Codex session log
+Date: 2026-03-30
+Workspace root: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer
+
+Summary of work completed in this session
+
+1. Project scaffold
+   - Created standalone project:
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer
+   - Added packaging metadata in:
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/pyproject.toml
+
+2. Config
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/config.json
+   - Added editable configuration for:
+     - ticker universe
+     - backtest dates and capital
+     - trading cost assumptions
+     - strategy parameters
+     - paper-trading broker settings
+
+3. Data and research pipeline
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/data.py
+   - Added historical price download from yfinance.
+   - Added optional CSV-based offline price loading fallback.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/features.py
+   - Added technical and return-based feature engineering, including RSI, moving-average ratios, momentum, volatility, z-score, and breakout features.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/strategies.py
+   - Added:
+     - dual momentum / trend-following strategy
+     - mean-reversion strategy
+     - rolling ML classifier strategy using HistGradientBoostingClassifier
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/backtest.py
+   - Added backtest engine with turnover-based trading costs and equity-curve generation.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/metrics.py
+   - Added annual return, volatility, Sharpe ratio, win rate, and max drawdown metrics.
+
+4. Paper trading
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/brokers.py
+   - Added:
+     - simulated paper broker
+     - moomoo paper-trading adapter targeting OpenD simulated orders
+
+5. CLI and tests
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/cli.py
+   - Added commands:
+     - backtest
+     - train-ml
+     - paper-trade
+     - optimize
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/tests/test_smoke.py
+   - Added basic parser and config smoke tests.
+
+6. Documentation
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/README.md
+   - Added overview, usage, limitations, and strategy descriptions.
+
+7. Dashboard and optimization
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/dashboard.py
+   - Added Streamlit dashboard for:
+     - backtests
+     - optimization runs
+     - paper-trading controls
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/optimizer.py
+   - Added grid-search optimization for dual momentum and mean reversion strategy parameters.
+
+8. Runtime fallback
+   - Added offline CSV fallback through `data_cache_path` in config to keep the toolkit usable when live Yahoo download is blocked.
+
+Instruction adopted
+- Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.

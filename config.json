@@ -1,0 +1,40 @@
+{
+  "tickers": ["SPY", "QQQ", "IWM", "XLF", "XLK"],
+  "benchmark": "SPY",
+  "start_date": "2018-01-01",
+  "end_date": null,
+  "data_cache_path": null,
+  "cash": 100000.0,
+  "transaction_cost_bps": 2.0,
+  "slippage_bps": 1.0,
+  "strategies": {
+    "dual_momentum": {
+      "fast_window": 50,
+      "slow_window": 200,
+      "volatility_target": 0.18,
+      "max_leverage": 1.0
+    },
+    "mean_reversion": {
+      "lookback": 20,
+      "entry_z": 1.5,
+      "exit_z": 0.5,
+      "max_leverage": 1.0
+    },
+    "ml_classifier": {
+      "train_window": 252,
+      "retrain_frequency": 21,
+      "probability_threshold": 0.54,
+      "max_weight": 1.0
+    }
+  },
+  "paper_trading": {
+    "broker": "simulated",
+    "moomoo_host": "127.0.0.1",
+    "moomoo_port": 11111,
+    "moomoo_market": "US",
+    "moomoo_pwd_unlock": "",
+    "ibkr_host": "127.0.0.1",
+    "ibkr_port": 7497,
+    "ibkr_client_id": 7
+  }
+}
