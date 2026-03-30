@@ -115,6 +115,9 @@ An IBKR config shape is included, but the default implementation in this
 project does not place IBKR orders yet. The cleaner near-term path is to prove
 the stack with the simulator or moomoo first.
 
+Paper trading rebalances to target holdings based on current positions and
+latest prices. It does not blindly resubmit the full target weights on every run.
+
 ## Important limitations
 
 - This project is for research and simulated execution only.

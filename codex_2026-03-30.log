@@ -73,5 +73,11 @@ Summary of work completed in this session
 8. Runtime fallback
    - Added offline CSV fallback through `data_cache_path` in config to keep the toolkit usable when live Yahoo download is blocked.
 
+9. Review-driven fixes
+   - Fixed paper-trade execution semantics so orders rebalance toward target holdings using current positions, instead of resubmitting full target sizes each run.
+   - Added Streamlit as an actual project dependency in pyproject.
+   - Strengthened tests so strategy generation is exercised with enough history to produce non-zero signals.
+   - Expanded ignore rules for generated package metadata and session logs.
+
 Instruction adopted
 - Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.

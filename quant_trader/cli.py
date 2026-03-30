@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 
+import pandas as pd
+
 from .backtest import run_backtest
 from .brokers import OrderRequest, build_paper_broker
 from .config import load_config
@@ -36,6 +38,27 @@ def _load_prices(config):
     if config.data_cache_path:
         return load_prices_from_csv(config.data_cache_path)
     return download_prices(config.tickers, start=config.start_date, end=config.end_date)
+
+
+def build_rebalance_orders(
+    target_weights: pd.Series,
+    latest_prices: pd.Series,
+    current_positions: dict[str, int],
+    capital: float,
+) -> list[OrderRequest]:
+    orders: list[OrderRequest] = []
+    for symbol, weight in target_weights.items():
+        price = float(latest_prices[symbol])
+        if price <= 0:
+            continue
+        target_shares = int(round((float(weight) * capital) / price))
+        current_shares = int(current_positions.get(symbol, 0))
+        delta = target_shares - current_shares
+        if delta == 0:
+            continue
+        side = "BUY" if delta > 0 else "SELL"
+        orders.append(OrderRequest(symbol=symbol, side=side, quantity=abs(delta)))
+    return orders
 
 
 def run_backtests(config_path: str, strategy_name: str | None = None) -> int:
@@ -102,15 +125,20 @@ def run_paper_trade(config_path: str, strategy_name: str) -> int:
     strategy = build_strategy(strategy_name, config.strategies[strategy_name])
     weights = strategy.generate(prices)
     latest = weights.iloc[-1].sort_values(ascending=False)
+    latest_prices = prices.iloc[-1]
     broker = build_paper_broker(config.paper_trading)
+    current_positions = broker.get_positions()
+    orders = build_rebalance_orders(
+        target_weights=latest,
+        latest_prices=latest_prices,
+        current_positions=current_positions,
+        capital=config.cash,
+    )
 
     print(f"broker={config.paper_trading['broker']}")
-    for symbol, weight in latest.items():
-        if abs(weight) < 1e-6:
-            continue
-        side = "BUY" if weight > 0 else "SELL"
-        quantity = max(1, int(abs(weight) * 100))
-        receipt = broker.place_market_order(OrderRequest(symbol=symbol, side=side, quantity=quantity))
+    print(json.dumps({"current_positions": current_positions}, indent=2, default=str))
+    for order in orders:
+        receipt = broker.place_market_order(order)
         print(json.dumps(receipt.__dict__, indent=2, default=str))
     return 0
 

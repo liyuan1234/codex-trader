@@ -23,6 +23,9 @@ class OrderReceipt:
 
 
 class PaperBroker(Protocol):
+    def get_positions(self) -> dict[str, int]:
+        raise NotImplementedError
+
     def place_market_order(self, order: OrderRequest) -> OrderReceipt:
         raise NotImplementedError
 
@@ -30,6 +33,9 @@ class PaperBroker(Protocol):
 class SimulatedPaperBroker:
     def __init__(self) -> None:
         self.positions: dict[str, int] = {}
+
+    def get_positions(self) -> dict[str, int]:
+        return dict(self.positions)
 
     def place_market_order(self, order: OrderRequest) -> OrderReceipt:
         signed_qty = order.quantity if order.side.upper() == "BUY" else -order.quantity
@@ -55,13 +61,36 @@ class MoomooPaperBroker:
         self._TrdEnv = TrdEnv
         self._OrderType = OrderType
         self._RET_OK = RET_OK
+        self._context_kwargs = {
+            "filter_trdmarket": self.market,
+            "host": host,
+            "port": port,
+            "security_firm": self._SecurityFirm.FUTUSG,
+        }
         self.host = host
         self.port = port
         self.market = getattr(TrdMarket, market)
         self.pwd_unlock = pwd_unlock
 
+    def get_positions(self) -> dict[str, int]:
+        ctx = self._OpenSecTradeContext(**self._context_kwargs)
+        try:
+            if self.pwd_unlock:
+                ctx.unlock_trade(self.pwd_unlock)
+            ret, data = ctx.position_list_query(position_market=self.market, trd_env=self._TrdEnv.SIMULATE)
+            if ret != self._RET_OK:
+                raise RuntimeError(f"moomoo position_list_query failed: {data}")
+            if not hasattr(data, "iterrows"):
+                return {}
+            positions: dict[str, int] = {}
+            for _, row in data.iterrows():
+                positions[str(row["code"])] = int(row["qty"])
+            return positions
+        finally:
+            ctx.close()
+
     def place_market_order(self, order: OrderRequest) -> OrderReceipt:
-        ctx = self._OpenSecTradeContext(filter_trdmarket=self.market, host=self.host, port=self.port, security_firm=self._SecurityFirm.FUTUSG)
+        ctx = self._OpenSecTradeContext(**self._context_kwargs)
         try:
             if self.pwd_unlock:
                 ctx.unlock_trade(self.pwd_unlock)

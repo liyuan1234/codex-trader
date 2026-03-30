@@ -8,6 +8,7 @@ import streamlit as st
 
 from quant_trader.backtest import run_backtest
 from quant_trader.brokers import OrderRequest, build_paper_broker
+from quant_trader.cli import build_rebalance_orders
 from quant_trader.config import load_config
 from quant_trader.data import download_prices, load_prices_from_csv
 from quant_trader.optimizer import optimize_strategy
@@ -107,17 +108,23 @@ with tab_paper:
         strategy = build_strategy(strategy_name, config.strategies[strategy_name])
         weights = strategy.generate(prices)
         latest = weights.iloc[-1].sort_values(ascending=False)
+        latest_prices = prices.iloc[-1]
         broker = build_paper_broker(config.paper_trading)
+        current_positions = broker.get_positions()
+        orders = build_rebalance_orders(
+            target_weights=latest,
+            latest_prices=latest_prices,
+            current_positions=current_positions,
+            capital=config.cash,
+        )
         st.dataframe(latest.rename("weight"))
+        st.json({"current_positions": current_positions})
+        st.dataframe(pd.DataFrame([order.__dict__ for order in orders]) if orders else pd.DataFrame(columns=["symbol", "side", "quantity"]))
 
         if st.button("Submit Paper Orders"):
             receipts = []
-            for symbol, weight in latest.items():
-                if abs(weight) < 1e-6:
-                    continue
-                side = "BUY" if weight > 0 else "SELL"
-                quantity = max(1, int(abs(weight) * 100))
-                receipt = broker.place_market_order(OrderRequest(symbol=symbol, side=side, quantity=quantity))
+            for order in orders:
+                receipt = broker.place_market_order(OrderRequest(symbol=order.symbol, side=order.side, quantity=order.quantity))
                 receipts.append(receipt.__dict__)
             st.code(json.dumps(receipts, indent=2, default=str))
     except Exception as exc:
