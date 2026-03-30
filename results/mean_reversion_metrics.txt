@@ -1,0 +1,22 @@
+{
+  "strategy": "mean_reversion",
+  "date_range": {
+    "start": "2018-01-02",
+    "end": "2026-03-27"
+  },
+  "tickers": [
+    "SPY",
+    "IWM",
+    "QQQ",
+    "XLF",
+    "XLK"
+  ],
+  "metrics": {
+    "annual_return": -0.07763233354079746,
+    "annual_volatility": 0.1774059653250634,
+    "sharpe": -0.4375970864257618,
+    "max_drawdown": -0.572005168194734,
+    "win_rate": 0.2768115942028985
+  },
+  "ending_equity": 51488.709480889614
+}

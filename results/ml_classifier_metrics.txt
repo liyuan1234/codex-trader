@@ -1,0 +1,22 @@
+{
+  "strategy": "ml_classifier",
+  "date_range": {
+    "start": "2018-01-02",
+    "end": "2026-03-27"
+  },
+  "tickers": [
+    "SPY",
+    "IWM",
+    "QQQ",
+    "XLF",
+    "XLK"
+  ],
+  "metrics": {
+    "annual_return": -0.027413710740474606,
+    "annual_volatility": 0.14472309199381145,
+    "sharpe": -0.18942181487973497,
+    "max_drawdown": -0.2885572208222561,
+    "win_rate": 0.391304347826087
+  },
+  "ending_equity": 79586.30043426035
+}

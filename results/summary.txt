@@ -1,0 +1,23 @@
+Codex Trader backtest summary
+Generated: 2026-03-30
+
+dual_momentum
+  annual_return: 0.12507361468947353
+  annual_volatility: 0.186292939191973
+  sharpe: 0.6713814019574109
+  max_drawdown: -0.3584423520555631
+  win_rate: 0.4396135265700483
+
+mean_reversion
+  annual_return: -0.07763233354079757
+  annual_volatility: 0.17740596532506334
+  sharpe: -0.4375970864257625
+  max_drawdown: -0.5720051681947345
+  win_rate: 0.2768115942028985
+
+ml_classifier
+  annual_return: -0.027413710740474606
+  annual_volatility: 0.14472309199381145
+  sharpe: -0.18942181487973497
+  max_drawdown: -0.2885572208222561
+  win_rate: 0.391304347826087

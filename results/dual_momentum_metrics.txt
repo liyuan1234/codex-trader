@@ -1,0 +1,22 @@
+{
+  "strategy": "dual_momentum",
+  "date_range": {
+    "start": "2018-01-02",
+    "end": "2026-03-27"
+  },
+  "tickers": [
+    "SPY",
+    "IWM",
+    "QQQ",
+    "XLF",
+    "XLK"
+  ],
+  "metrics": {
+    "annual_return": 0.1250736146894742,
+    "annual_volatility": 0.186292939191973,
+    "sharpe": 0.6713814019574145,
+    "max_drawdown": -0.3584423520555632,
+    "win_rate": 0.4396135265700483
+  },
+  "ending_equity": 263278.17679947906
+}

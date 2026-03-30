@@ -107,5 +107,19 @@ Summary of work completed in this session
      - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/dashboard.py
    - Renamed the console script entry point from `quant-trader` to `codex-trader`.
 
+12. Backtest artifacts
+   - Created /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results
+   - Saved downloaded price history to:
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/prices_2018_to_2026-03-30.csv
+   - Saved baseline strategy outputs to:
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/dual_momentum_metrics.txt
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/dual_momentum_equity_curve.csv
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/mean_reversion_metrics.txt
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/mean_reversion_equity_curve.csv
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/ml_classifier_metrics.txt
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/ml_classifier_equity_curve.csv
+     - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/summary.txt
+   - Used the repo's backtest engine with the default config and committed the generated result artifacts.
+
 Instruction adopted
 - Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.
