@@ -1,23 +1,27 @@
 Codex Trader backtest summary
 Generated: 2026-03-30
+Data file: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/prices_2018_to_2026-03-30.csv
 
 dual_momentum
-  annual_return: 0.12507361468947353
+  ending_equity: 263278.17679947906
+  annual_return: 0.1250736146894742
   annual_volatility: 0.186292939191973
-  sharpe: 0.6713814019574109
-  max_drawdown: -0.3584423520555631
+  sharpe: 0.6713814019574145
+  max_drawdown: -0.3584423520555632
   win_rate: 0.4396135265700483
 
 mean_reversion
-  annual_return: -0.07763233354079757
-  annual_volatility: 0.17740596532506334
-  sharpe: -0.4375970864257625
-  max_drawdown: -0.5720051681947345
+  ending_equity: 51488.709480889614
+  annual_return: -0.07763233354079746
+  annual_volatility: 0.1774059653250634
+  sharpe: -0.4375970864257618
+  max_drawdown: -0.572005168194734
   win_rate: 0.2768115942028985
 
 ml_classifier
-  annual_return: -0.027413710740474606
-  annual_volatility: 0.14472309199381145
-  sharpe: -0.18942181487973497
-  max_drawdown: -0.2885572208222561
+  ending_equity: 79897.15226417634
+  annual_return: -0.026952042777435348
+  annual_volatility: 0.14472216606830163
+  sharpe: -0.18623299740217633
+  max_drawdown: -0.2885572208222519
   win_rate: 0.391304347826087

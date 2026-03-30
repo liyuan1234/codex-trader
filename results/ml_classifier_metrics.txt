@@ -12,11 +12,11 @@
     "XLK"
   ],
   "metrics": {
-    "annual_return": -0.027413710740474606,
-    "annual_volatility": 0.14472309199381145,
-    "sharpe": -0.18942181487973497,
-    "max_drawdown": -0.2885572208222561,
+    "annual_return": -0.026952042777435348,
+    "annual_volatility": 0.14472216606830163,
+    "sharpe": -0.18623299740217633,
+    "max_drawdown": -0.2885572208222519,
     "win_rate": 0.391304347826087
   },
-  "ending_equity": 79586.30043426035
+  "ending_equity": 79897.15226417634
 }

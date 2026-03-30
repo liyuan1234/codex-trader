@@ -121,5 +121,17 @@ Summary of work completed in this session
      - /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results/summary.txt
    - Used the repo's backtest engine with the default config and committed the generated result artifacts.
 
+13. Strategy walkthrough files
+   - Added explanation files under /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/results:
+     - dual_momentum_how_it_works.md
+     - mean_reversion_how_it_works.md
+     - ml_classifier_how_it_works.md
+     - options_translation.md
+   - Included:
+     - exact buy and sell conditions from code
+     - whether stop-loss exists in the current implementation
+     - real example signal dates and portfolio behavior from the committed price cache where available
+     - a separate note explaining how the current spot signals would need to be adapted before trading options
+
 Instruction adopted
 - Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.
