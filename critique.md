@@ -1,147 +1,100 @@
 # Code Critique
 
-This project has a useful shape for a compact quant-research tool: the core responsibilities are separated into data loading, strategy generation, backtesting, optimization, broker adapters, and CLI/dashboard entry points. That is a good foundation. The main improvements now are less about adding more functionality and more about tightening semantics, reducing duplication, and raising the floor on operational correctness.
+The project is progressing. The latest changes show the right instincts: moving from naive order submission toward actual rebalancing, improving tests, and tightening packaging. The remaining issues are no longer about broad structure. They are about making the execution model precise and dependable.
 
-## 1. Clarify the model of the system
+## 1. Execution correctness is still the main quality gate
 
-The code mixes two different concepts without making the boundary explicit:
+The code now distinguishes target weights from order deltas more clearly, which is the right direction. But the execution layer is still not robust enough to trust. Two issues show that:
 
-- target portfolio weights
-- order instructions
+- the moomoo adapter currently has an initialization bug
+- target sizing is still based on starting cash rather than actual portfolio value
 
-Backtesting treats strategy output as target exposures, which is a clean design. Paper trading then reuses those same weights as if they were direct order sizes. That mismatch is the most important conceptual problem in the codebase. A stronger design would make the flow explicit:
+That means the core product promise, "take a signal and translate it into a credible rebalance," is still not fully met. Until that is stable, more strategy work will have low leverage.
 
-1. strategy produces target weights
-2. portfolio state converts target weights into desired positions
-3. execution logic computes deltas from current holdings
-4. broker adapter submits only the delta orders
+## 2. The project needs an explicit portfolio-state model
 
-Once those layers are separated, the code becomes easier to reason about and much safer to extend.
+The code is currently close to having one, but not quite there. Right now it passes around:
 
-## 2. Reduce duplicated business logic
+- target weights
+- latest prices
+- current positions
+- a capital number
 
-The CLI and Streamlit dashboard both repeat the same workflows:
+That should become a real domain object or at least a clearly defined contract. For example:
+
+- portfolio NAV
+- cash balance
+- current positions
+- target allocations
+- proposed rebalance orders
+
+Once those concepts are explicit, the sizing logic becomes easier to validate and less likely to drift between CLI, dashboard, and broker adapters.
+
+## 3. The testing strategy is improving, but it is still too helper-oriented
+
+The new tests are better because they finally use enough price history and validate the rebalance helper. That is meaningful progress. But the most failure-prone code path is still not covered: constructing broker adapters, fetching positions, and running the paper-trade workflow end to end with mocks.
+
+The next test layer should focus on:
+
+- mocked broker integration tests
+- deterministic backtest math tests
+- portfolio rebalance tests with changing NAV and residual cash
+- error-path tests for bad broker responses and invalid config
+
+This project does not need a huge test suite. It needs a few tests aimed directly at the highest-risk behavior.
+
+## 4. Shared orchestration is still too thin
+
+The dashboard now reuses `build_rebalance_orders`, which is an improvement, but it is still sharing one helper rather than a full application workflow. The orchestration for:
 
 - loading config
 - loading prices
-- building a strategy
-- generating weights
-- running optimization
-- translating weights into paper orders
+- building strategies
+- computing signals
+- preparing paper orders
 
-That duplication will drift. The CLI and dashboard should call shared service functions instead of re-implementing orchestration separately. A simple `services.py` or `app.py` layer with functions like `run_strategy_backtest`, `run_strategy_optimization`, and `build_paper_orders` would improve consistency and make it much easier to test behavior once.
+still exists in multiple places. That duplication is manageable now, but it will slow the team down if more broker features, metrics, or safety checks are added. A small application/service layer would help.
 
-## 3. Strengthen testing around behavior, not just execution
+## 5. Packaging and repo hygiene are on the right track
 
-The current tests mostly prove that parsing and import paths work. They do not meaningfully validate the trading logic. For this kind of code, the most valuable tests are deterministic behavioral tests.
+This area improved meaningfully:
 
-Examples of tests worth adding:
+- `streamlit` is now declared
+- `.gitignore` is better aligned with generated outputs
 
-- a backtest with fixed prices and known weights where expected returns and costs are asserted directly
-- a strategy test verifying that a rising series triggers long exposure for dual momentum
-- a rebalance test proving that repeated paper-trade runs do not keep accumulating unwanted positions
-- a data-loader test for single-ticker and multi-ticker `yfinance` outputs
-- an optimizer test that verifies result ranking and parameter coverage
+That said, packaging can still be stronger. The next step is to make setup and validation reproducible:
 
-If you add only a few tests, they should target the financial semantics, not just command success.
+- define a dev dependency group
+- document one canonical test command
+- ensure fresh-environment install and smoke-run instructions stay accurate
 
-## 4. Improve dependency and packaging discipline
+Those changes have an outsized effect on maintainability.
 
-The project is installable, but the packaging story is incomplete. The dashboard is documented as a first-class entry point, yet `streamlit` is not declared as a dependency. Generated artifacts like `.egg-info`, caches, and log files are also sitting in the worktree. That suggests the repo boundary between source and build/runtime output is still loose.
+## 6. The project does not need deeper quant research yet
 
-A cleaner setup would include:
+At this stage, more research into feature extraction or more sophisticated quantitative methods is not the bottleneck. The platform is not yet stable enough for that work to compound effectively.
 
-- a fuller `.gitignore` for build, cache, and log artifacts
-- optional dependency groups such as `dev` and `dashboard`
-- a documented test command that works from a fresh environment
+Adding more signals now would likely create:
 
-This matters because packaging problems make a project feel less reliable than the code may actually be.
+- more code paths
+- more tuning surface area
+- more backtest outputs
+- more ambiguity about whether performance changes come from better ideas or unstable plumbing
 
-## 5. Be more explicit about data assumptions
+The better sequence is:
 
-The strategy and feature code make several implicit assumptions:
-
-- daily bars
-- adjusted close behavior
-- sufficient lookback history
-- synchronized symbol calendars
-- forward-filling missing prices is acceptable
-
-Those may be reasonable defaults, but they should be called out in code or validation. Right now, many failures will appear only as odd results instead of explicit errors. Adding basic validation at load time would help:
-
-- reject empty or too-short datasets for a chosen strategy
-- verify required columns and monotonic timestamps
-- surface when forward-filled data crosses large gaps
-
-Quant code benefits from being opinionated about data quality rather than silently accepting everything.
-
-## 6. Separate research code from execution code more carefully
-
-Research tooling and broker integrations are in the same package, which is fine for a small project, but the execution path deserves stricter interfaces. Broker code should operate on well-defined domain objects such as:
-
-- portfolio snapshot
-- target allocation
-- order proposal
-- execution receipt
-
-That makes it easier to simulate, test, and later support brokers beyond the current simulator and moomoo adapter. It also prevents research-stage shortcuts from leaking into the execution path.
-
-## 7. Add stronger guardrails around runtime behavior
-
-This code can place paper orders, so even though it is not live trading software, it should still behave like an operational system.
-
-Useful guardrails would include:
-
-- dry-run previews before order submission
-- explicit max order size limits
-- visibility into current positions before rebalance
-- logging that distinguishes signal generation from order placement
-- clear failure handling around broker connectivity and partial submission
-
-The more the system touches a broker API, the less acceptable implicit behavior becomes.
-
-## 8. Make the metrics layer a bit more honest
-
-The metrics module is concise, which is good, but it currently presents a polished set of summary numbers without much context. In quant tooling, that can encourage overconfidence. You could improve this by adding:
-
-- benchmark-relative metrics
-- exposure statistics
-- turnover statistics
-- number of trades or rebalance events
-- explicit warnings for too-short backtests
-
-The point is not more metrics for their own sake. It is to make the results harder to misread.
-
-## 9. Tighten the public interface of configuration
-
-`AppConfig` is a thin wrapper over raw JSON, which keeps things simple, but it does not validate much. Missing keys or malformed values will fail late and somewhat indirectly. A stronger config model would validate fields when loading:
-
-- required keys and types
-- valid strategy names
-- parameter ranges
-- broker-specific required fields
-
-That would turn configuration errors into immediate, readable feedback instead of runtime surprises deep in execution.
-
-## 10. Keep the project small, but make the boundaries sharper
-
-The codebase does not need a heavy framework. It just needs cleaner boundaries:
-
-- domain logic for signals and portfolio targets
-- application services for workflows
-- infrastructure for data and brokers
-- interfaces that are easy to test without network access
-
-That would preserve the current simplicity while making future additions less fragile.
+1. make execution and portfolio-state handling correct
+2. make evaluation reproducible and well tested
+3. then expand features, models, and research depth
 
 ## Recommended Next Steps
 
-1. Fix the paper-trading semantics so execution is based on position deltas, not repeated submission of target weights.
-2. Extract shared workflow logic from the CLI and dashboard into common service functions.
-3. Add a small set of deterministic tests for backtest math, strategy outputs, and rebalancing behavior.
-4. Clean up packaging by declaring missing dependencies and ignoring generated artifacts.
-5. Add validation for config input and minimum data sufficiency.
+1. Fix the moomoo constructor bug and add a mocked regression test for broker initialization and position loading.
+2. Replace `config.cash` rebalance sizing with sizing against actual portfolio NAV and available cash.
+3. Extract a small service layer for backtest, optimization, and paper-trade preparation so the CLI and dashboard stop drifting.
+4. Add a few deterministic tests around backtest math, rebalance logic under changing NAV, and broker error handling.
+5. Standardize local setup and testing so contributors can validate changes from a clean environment.
 
 ## Bottom Line
 
-The project is already structured well enough to become a solid small research platform. The next stage of improvement is not feature breadth. It is precision: clearer semantics, less duplicated orchestration, stronger tests, and safer execution behavior.
+The project is close to the point where quantitative research could become high leverage, but it is not there yet. The team should spend the next cycle on execution correctness, shared application logic, and test reliability rather than new feature extraction or model ideas.
