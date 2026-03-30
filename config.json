@@ -29,6 +29,7 @@
   },
   "paper_trading": {
     "broker": "simulated",
+    "starting_cash": 100000.0,
     "moomoo_host": "127.0.0.1",
     "moomoo_port": 11111,
     "moomoo_market": "US",

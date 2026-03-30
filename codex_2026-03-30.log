@@ -79,5 +79,25 @@ Summary of work completed in this session
    - Strengthened tests so strategy generation is exercised with enough history to produce non-zero signals.
    - Expanded ignore rules for generated package metadata and session logs.
 
+10. Review and critique follow-up
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/brokers.py
+   - Added `AccountSnapshot` and switched broker state reads from positions-only to cash-plus-positions snapshots.
+   - Fixed the moomoo constructor ordering bug so market is assigned before context kwargs are built.
+   - Added simulated broker cash accounting with per-order reference prices.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/quant_trader/cli.py
+   - Added shared paper-trade preparation logic used by both CLI and dashboard.
+   - Switched rebalance sizing from starting cash to current portfolio value.
+   - Updated rebalance logic to liquidate holdings that are no longer in target weights.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/dashboard.py
+   - Removed duplicate paper-trade orchestration and routed dashboard paper trading through the shared preparation flow.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/tests/test_smoke.py
+   - Added regression coverage for moomoo initialization, simulated broker cash/position accounting, untargeted-position liquidation, and paper-trade preparation sizing.
+
+   - File: /Users/liyuan/Desktop/codex-image-agent/quant-trading-analyzer/README.md
+   - Documented portfolio-value sizing and shared CLI/dashboard rebalance behavior.
+
 Instruction adopted
 - Maintain a session log in the working repo folder named codex_{date}.log with files changed and concise change summaries.

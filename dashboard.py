@@ -7,8 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from quant_trader.backtest import run_backtest
-from quant_trader.brokers import OrderRequest, build_paper_broker
-from quant_trader.cli import build_rebalance_orders
+from quant_trader.cli import prepare_paper_trade
 from quant_trader.config import load_config
 from quant_trader.data import download_prices, load_prices_from_csv
 from quant_trader.optimizer import optimize_strategy
@@ -103,28 +102,20 @@ with tab_optimize:
 
 with tab_paper:
     try:
-        config = load_config(config_path)
-        prices = load_prices_cached(config_path)
-        strategy = build_strategy(strategy_name, config.strategies[strategy_name])
-        weights = strategy.generate(prices)
-        latest = weights.iloc[-1].sort_values(ascending=False)
-        latest_prices = prices.iloc[-1]
-        broker = build_paper_broker(config.paper_trading)
-        current_positions = broker.get_positions()
-        orders = build_rebalance_orders(
-            target_weights=latest,
-            latest_prices=latest_prices,
-            current_positions=current_positions,
-            capital=config.cash,
-        )
+        prepared = prepare_paper_trade(config_path, strategy_name)
+        broker = prepared["broker"]
+        latest = prepared["latest_weights"]
+        snapshot = prepared["account_snapshot"]
+        portfolio_value = prepared["portfolio_value"]
+        orders = prepared["orders"]
         st.dataframe(latest.rename("weight"))
-        st.json({"current_positions": current_positions})
+        st.json({"cash_balance": snapshot.cash_balance, "current_positions": snapshot.positions, "portfolio_value": portfolio_value})
         st.dataframe(pd.DataFrame([order.__dict__ for order in orders]) if orders else pd.DataFrame(columns=["symbol", "side", "quantity"]))
 
         if st.button("Submit Paper Orders"):
             receipts = []
             for order in orders:
-                receipt = broker.place_market_order(OrderRequest(symbol=order.symbol, side=order.side, quantity=order.quantity))
+                receipt = broker.place_market_order(order)
                 receipts.append(receipt.__dict__)
             st.code(json.dumps(receipts, indent=2, default=str))
     except Exception as exc:

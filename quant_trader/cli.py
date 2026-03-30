@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import asdict
 
 import pandas as pd
 
 from .backtest import run_backtest
-from .brokers import OrderRequest, build_paper_broker
+from .brokers import AccountSnapshot, OrderRequest, build_paper_broker
 from .config import load_config
 from .data import download_prices, load_prices_from_csv
 from .optimizer import optimize_strategy
@@ -44,21 +45,63 @@ def build_rebalance_orders(
     target_weights: pd.Series,
     latest_prices: pd.Series,
     current_positions: dict[str, int],
-    capital: float,
+    portfolio_value: float,
 ) -> list[OrderRequest]:
     orders: list[OrderRequest] = []
-    for symbol, weight in target_weights.items():
+    universe = sorted(set(target_weights.index) | set(current_positions))
+    for symbol in universe:
+        weight = float(target_weights.get(symbol, 0.0))
+        if symbol not in latest_prices:
+            continue
         price = float(latest_prices[symbol])
         if price <= 0:
             continue
-        target_shares = int(round((float(weight) * capital) / price))
+        target_shares = int(round((weight * portfolio_value) / price))
         current_shares = int(current_positions.get(symbol, 0))
         delta = target_shares - current_shares
         if delta == 0:
             continue
         side = "BUY" if delta > 0 else "SELL"
-        orders.append(OrderRequest(symbol=symbol, side=side, quantity=abs(delta)))
+        orders.append(OrderRequest(symbol=symbol, side=side, quantity=abs(delta), reference_price=price))
     return orders
+
+
+def estimate_portfolio_value(snapshot: AccountSnapshot, latest_prices: pd.Series, fallback_cash: float) -> float:
+    cash_balance = snapshot.cash_balance if snapshot.cash_balance != 0.0 else float(fallback_cash)
+    holdings_value = 0.0
+    for symbol, shares in snapshot.positions.items():
+        if symbol in latest_prices:
+            holdings_value += float(latest_prices[symbol]) * int(shares)
+    return cash_balance + holdings_value
+
+
+def prepare_paper_trade(config_path: str, strategy_name: str) -> dict[str, object]:
+    config = load_config(config_path)
+    prices = _load_prices(config)
+    strategy = build_strategy(strategy_name, config.strategies[strategy_name])
+    weights = strategy.generate(prices)
+    latest_weights = weights.iloc[-1].sort_values(ascending=False)
+    latest_prices = prices.iloc[-1]
+    paper_config = config.paper_trading
+    paper_config.setdefault("starting_cash", config.cash)
+    broker = build_paper_broker(paper_config)
+    snapshot = broker.get_account_snapshot()
+    portfolio_value = estimate_portfolio_value(snapshot, latest_prices, fallback_cash=config.cash)
+    orders = build_rebalance_orders(
+        target_weights=latest_weights,
+        latest_prices=latest_prices,
+        current_positions=snapshot.positions,
+        portfolio_value=portfolio_value,
+    )
+    return {
+        "config": config,
+        "broker": broker,
+        "latest_weights": latest_weights,
+        "latest_prices": latest_prices,
+        "account_snapshot": snapshot,
+        "portfolio_value": portfolio_value,
+        "orders": orders,
+    }
 
 
 def run_backtests(config_path: str, strategy_name: str | None = None) -> int:
@@ -120,23 +163,15 @@ def run_optimization(config_path: str, strategy_name: str) -> int:
 
 
 def run_paper_trade(config_path: str, strategy_name: str) -> int:
-    config = load_config(config_path)
-    prices = _load_prices(config)
-    strategy = build_strategy(strategy_name, config.strategies[strategy_name])
-    weights = strategy.generate(prices)
-    latest = weights.iloc[-1].sort_values(ascending=False)
-    latest_prices = prices.iloc[-1]
-    broker = build_paper_broker(config.paper_trading)
-    current_positions = broker.get_positions()
-    orders = build_rebalance_orders(
-        target_weights=latest,
-        latest_prices=latest_prices,
-        current_positions=current_positions,
-        capital=config.cash,
-    )
+    prepared = prepare_paper_trade(config_path, strategy_name)
+    config = prepared["config"]
+    broker = prepared["broker"]
+    snapshot = prepared["account_snapshot"]
+    portfolio_value = prepared["portfolio_value"]
+    orders = prepared["orders"]
 
     print(f"broker={config.paper_trading['broker']}")
-    print(json.dumps({"current_positions": current_positions}, indent=2, default=str))
+    print(json.dumps({"account_snapshot": asdict(snapshot), "portfolio_value": portfolio_value}, indent=2, default=str))
     for order in orders:
         receipt = broker.place_market_order(order)
         print(json.dumps(receipt.__dict__, indent=2, default=str))

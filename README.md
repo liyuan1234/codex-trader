@@ -116,7 +116,12 @@ project does not place IBKR orders yet. The cleaner near-term path is to prove
 the stack with the simulator or moomoo first.
 
 Paper trading rebalances to target holdings based on current positions and
-latest prices. It does not blindly resubmit the full target weights on every run.
+latest prices. It sizes against current portfolio value when the broker can
+report cash and positions, and it does not blindly resubmit the full target
+weights on every run.
+
+The same paper-trade preparation flow is shared by the CLI and the Streamlit
+dashboard so sizing and rebalance behavior stay aligned.
 
 ## Important limitations
 
